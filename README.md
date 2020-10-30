@@ -1,14 +1,15 @@
 # ABSA-PyTorch
 
-> Aspect Based Sentiment Analysis, PyTorch Implementations.
->
-> 基于方面的情感分析，使用PyTorch实现。
+## Aspect Based Sentiment Analysis, PyTorch Implementations.
+基于方面的情感分析，使用PyTorch实现。
 
+```
 ![LICENSE](https://img.shields.io/packagist/l/doctrine/orm.svg)
 [![Gitter](https://badges.gitter.im/ABSA-PyTorch/community.svg)](https://gitter.im/ABSA-PyTorch/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
+```
 
 ## Requirement
 
@@ -20,34 +21,34 @@
 
 To install requirements, run `pip install -r requirements.txt`.
 
-* For non-BERT-based models,
-[GloVe pre-trained word vectors](https://github.com/stanfordnlp/GloVe#download-pre-trained-word-vectors) are required, please refer to [data_utils.py](./data_utils.py) for more detail.
+* 对于基于非BERT的模型,
+[GloVe pre-trained word vectors](https://github.com/stanfordnlp/GloVe#download-pre-trained-word-vectors) 是必须的, 请参考 [data_utils.py](./data_utils.py) 更多细节.
 
-## Usage
+## 使用方式
 
-### Training
+### 训练
 
 ```sh
 python train.py --model_name bert_spc --dataset restaurant
 ```
 
-* All implemented models are listed in [models directory](./models/).
-* See [train.py](./train.py) for more training arguments.
-* Refer to [train_k_fold_cross_val.py](./train_k_fold_cross_val.py) for k-fold cross validation support.
+* 所有实现的模型都在  [models directory](./models/).
+* 查看 [train.py](./train.py) 了解更多训练参数
+* 参考 [train_k_fold_cross_val.py](./train_k_fold_cross_val.py) k折交叉验证。
 
-### Inference
+### 推理
 
-* Refer to [infer_example.py](./infer_example.py) for non-BERT-based models.
-* Refer to [infer_example_bert_models.py](./infer_example_bert_models.py) for BERT-based models.
+* 参考 [infer_example.py](./infer_example.py) 用于基于非BERT的模型.
+* 参考 [infer_example_bert_models.py](./infer_example_bert_models.py) 用于基于BERT的模型.
 
-### Tips
+### 提示
 
-* For non-BERT-based models, training procedure is not very stable.
-* BERT-based models are more sensitive to hyperparameters (especially learning rate) on small data sets, see [this issue](https://github.com/songyouwei/ABSA-PyTorch/issues/27).
-* Fine-tuning on the specific task is necessary for releasing the true power of BERT.
+* 对于基于非BERT的模型，训练过程不是很稳定。
+* 基于BERT的模型对小数据集的超参数（尤其是学习率）更敏感，请参阅 [this issue](https://github.com/songyouwei/ABSA-PyTorch/issues/27).
+* 为了释放BERT的真正性能，必须对特定任务进行微调。
 
 
-## Reviews / Surveys
+## Reviews / Surveys 论文
 
 Qiu, Xipeng, et al. "Pre-trained Models for Natural Language Processing: A Survey." arXiv preprint arXiv:2003.08271 (2020). [[pdf]](https://arxiv.org/pdf/2003.08271)
 
