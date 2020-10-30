@@ -69,12 +69,27 @@ def build_embedding_matrix(word2idx, embed_dim, dat_fname):
 
 
 def pad_and_truncate(sequence, maxlen, dtype='int64', padding='post', truncating='post', value=0):
+    """
+    对序列进行padding和截取
+    :param sequence: 序列id，例如 [2021, 1996, 3095, 2001, 2061, 9202, 2000, 2149, 1012]
+    :param maxlen: 最大序列长度
+    :param dtype: 数据转换成numpy int64格式
+    :param padding: post 还是pre
+    :param truncating: post 还是pre
+    :param value: 默认填充的值，默认用0填充
+    :return: [2021 1996 3095 2001 2061 9202 2000 2149 1012    0    0    0    0    0,    0    0    0    0    0    0    0    0    0    0    0    0    0    0,    0    0    0    0    0    0    0    0    0    0    0    0    0    0,    0    0    0    0    0    0    0    0    0    0    0    0    0    0,    0    0    0    0    0    0    0    0    0    0    0    0    0    0,    0    0    0    0    0    0    0    0    0    0]
+    """
+    #初始化创建maxlen序列长度的numpy 列表，
     x = (np.ones(maxlen) * value).astype(dtype)
     if truncating == 'pre':
+        #从前面截断
         trunc = sequence[-maxlen:]
     else:
+        #从后面截断
         trunc = sequence[:maxlen]
+    #截断后的数据转换成numpy
     trunc = np.asarray(trunc, dtype=dtype)
+    #从前还是后面padding
     if padding == 'post':
         x[:len(trunc)] = trunc
     else:
@@ -124,16 +139,19 @@ class Tokenizer4Bert:
 
     def text_to_sequence(self, text, reverse=False, padding='post', truncating='post'):
         """
-
-        :param text:
-        :param reverse:
-        :param padding:
-        :param truncating:
-        :return:
+        文本序列tokenizer化
+        :param text: 输入的文本序列, eg: but the staff was so horrible to us.
+        :param reverse: 反转所有
+        :param padding:  pre或 post， 在序列签名padding还是后面padding
+        :param truncating: pre或 post，如果序列过长，是从前面截断，还是后面
+        :return: 返回处理后的序列
         """
+        # tokenize(text) 是按bert进行tokenize，例如'but the staff was so horrible to us .' -->['but', 'the', 'staff', 'was', 'so', 'horrible', 'to', 'us', '.']
+        # sequence 变成序列[2021, 1996, 3095, 2001, 2061, 9202, 2000, 2149, 1012]
         sequence = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))
         if len(sequence) == 0:
             sequence = [0]
+        # 是否翻转
         if reverse:
             sequence = sequence[::-1]
         return pad_and_truncate(sequence, self.max_seq_len, padding=padding, truncating=truncating)
@@ -161,22 +179,31 @@ class ABSADataset(Dataset):
             aspect = lines[i + 1].lower().strip()
             #polarity情感，是0，-1，或1
             polarity = lines[i + 2].strip()
-            #
+            # 包含aspect的完整文本序列由文本到--> id
             text_raw_indices = tokenizer.text_to_sequence(text_left + " " + aspect + " " + text_right)
-            #
+            # 不包含aspect的文本处理，--> id
             text_raw_without_aspect_indices = tokenizer.text_to_sequence(text_left + " " + text_right)
-            #
+            # aspect左边的文本处理
             text_left_indices = tokenizer.text_to_sequence(text_left)
+            # aspect左边的文本+aspect处理
             text_left_with_aspect_indices = tokenizer.text_to_sequence(text_left + " " + aspect)
+            # 右边序列处理，并且做反转
             text_right_indices = tokenizer.text_to_sequence(text_right, reverse=True)
+            # aspect+右边序列，并且做反转
             text_right_with_aspect_indices = tokenizer.text_to_sequence(" " + aspect + " " + text_right, reverse=True)
+            # 单独aspect处理
             aspect_indices = tokenizer.text_to_sequence(aspect)
+            # 左边序列的长度
             left_context_len = np.sum(text_left_indices != 0)
+            # aspect的长度
             aspect_len = np.sum(aspect_indices != 0)
+            # aspect在文本中的位置tensor([2, 2])
             aspect_in_text = torch.tensor([left_context_len.item(), (left_context_len + aspect_len - 1).item()])
+            # 情感转换成正数 -1,0,1 --> 0,1,2 ,  0：NEG， 1：NEU， 2：POS
             polarity = int(polarity) + 1
-
+            # 构造成BERT格式，SEP分隔，sentence1是完全的句子，sentence2是aspect
             text_bert_indices = tokenizer.text_to_sequence('[CLS] ' + text_left + " " + aspect + " " + text_right + ' [SEP] ' + aspect + " [SEP]")
+            #
             bert_segments_ids = np.asarray([0] * (np.sum(text_raw_indices != 0) + 2) + [1] * (aspect_len + 1))
             bert_segments_ids = pad_and_truncate(bert_segments_ids, tokenizer.max_seq_len)
 
