@@ -4,6 +4,7 @@ __pycache__/
 *log*
 glove*
 logs
+datasets/restaurant/cached
 
 # OSX
 #
