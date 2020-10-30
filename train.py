@@ -175,31 +175,31 @@ class Instructor:
 
 
 def main():
-    # Hyper Parameters
+    # 超参数
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', default='bert_spc', type=str)
-    parser.add_argument('--dataset', default='laptop', type=str, help='twitter, restaurant, laptop')
+    parser.add_argument('--model_name', default='bert_spc', type=str, help='要使用的模型，模型在models目录下')
+    parser.add_argument('--dataset', default='laptop', type=str, help='数据集 twitter, restaurant, laptop')
     parser.add_argument('--optimizer', default='adam', type=str)
-    parser.add_argument('--initializer', default='xavier_uniform_', type=str)
-    parser.add_argument('--learning_rate', default=2e-5, type=float, help='try 5e-5, 2e-5 for BERT, 1e-3 for others')
+    parser.add_argument('--initializer', default='xavier_uniform_', type=str, help='参数初始化方法')
+    parser.add_argument('--learning_rate', default=2e-5, type=float, help='学习率BERT用 5e-5, 2e-5，其它用模型用 1e-3')
     parser.add_argument('--dropout', default=0.1, type=float)
-    parser.add_argument('--l2reg', default=0.01, type=float)
-    parser.add_argument('--num_epoch', default=10, type=int, help='try larger number for non-BERT models')
-    parser.add_argument('--batch_size', default=16, type=int, help='try 16, 32, 64 for BERT models')
-    parser.add_argument('--log_step', default=5, type=int)
-    parser.add_argument('--embed_dim', default=300, type=int)
-    parser.add_argument('--hidden_dim', default=300, type=int)
-    parser.add_argument('--bert_dim', default=768, type=int)
-    parser.add_argument('--pretrained_bert_name', default='bert-base-uncased', type=str)
-    parser.add_argument('--max_seq_len', default=80, type=int)
-    parser.add_argument('--polarities_dim', default=3, type=int)
-    parser.add_argument('--hops', default=3, type=int)
+    parser.add_argument('--l2reg', default=0.01, type=float, help='l2正则系数')
+    parser.add_argument('--num_epoch', default=10, type=int, help='非BERT类模型，请使用较多epoch')
+    parser.add_argument('--batch_size', default=16, type=int, help='BERT模型请使用如下batch_size 16, 32, 64')
+    parser.add_argument('--log_step', default=5, type=int,help='每多少step进行日志记录')
+    parser.add_argument('--embed_dim', default=300, type=int, help='embedding的维度')
+    parser.add_argument('--hidden_dim', default=300, type=int, help='隐藏层维度')
+    parser.add_argument('--bert_dim', default=768, type=int, help='bert dim')
+    parser.add_argument('--pretrained_bert_name', default='bert-base-uncased', type=str, help='使用的预训练模型')
+    parser.add_argument('--max_seq_len', default=80, type=int, help='最大序列长度')
+    parser.add_argument('--polarities_dim', default=3, type=int, help='类别维度，分几类,默认POS，NEU，NEG')
+    parser.add_argument('--hops', default=3, type=int,help='多少hop设置')
     parser.add_argument('--device', default=None, type=str, help='e.g. cuda:0')
-    parser.add_argument('--seed', default=None, type=int, help='set seed for reproducibility')
-    parser.add_argument('--valset_ratio', default=0, type=float, help='set ratio between 0 and 1 for validation support')
-    # The following parameters are only valid for the lcf-bert model
-    parser.add_argument('--local_context_focus', default='cdm', type=str, help='local context focus mode, cdw or cdm')
-    parser.add_argument('--SRD', default=3, type=int, help='semantic-relative-distance, see the paper of LCF-BERT model')
+    parser.add_argument('--seed', default=None, type=int, help='用于重现，随机数种子')
+    parser.add_argument('--valset_ratio', default=0, type=float, help='在0和1之间设置比例以验证')
+    # 以下参数仅对lcf-bert模型有效
+    parser.add_argument('--local_context_focus', default='cdm', type=str, help='本地上下文焦点模式，cdw或cdm')
+    parser.add_argument('--SRD', default=3, type=int, help='语义相对距离，请参阅LCF-BERT模型的论文')
     opt = parser.parse_args()
 
     if opt.seed is not None:
@@ -225,24 +225,25 @@ def main():
         'bert_spc': BERT_SPC,
         'aen_bert': AEN_BERT,
         'lcf_bert': LCF_BERT,
-        # default hyper-parameters for LCF-BERT model is as follws:
+        # LCF-BERT模型的默认超参数如下：
         # lr: 2e-5
         # l2: 1e-5
         # batch size: 16
         # num epochs: 5
     }
+    #数据文件检索
     dataset_files = {
         'twitter': {
-            'train': './datasets/acl-14-short-data/train.raw',
-            'test': './datasets/acl-14-short-data/test.raw'
+            'train': './datasets/twitter/train.raw',
+            'test': './datasets/twitter/test.raw'
         },
         'restaurant': {
-            'train': './datasets/semeval14/Restaurants_Train.xml.seg',
-            'test': './datasets/semeval14/Restaurants_Test_Gold.xml.seg'
+            'train': './datasets/restaurant/Restaurants_Train.xml.seg',
+            'test': './datasets/restaurant/Restaurants_Test_Gold.xml.seg'
         },
         'laptop': {
-            'train': './datasets/semeval14/Laptops_Train.xml.seg',
-            'test': './datasets/semeval14/Laptops_Test_Gold.xml.seg'
+            'train': './datasets/laptop/Laptops_Train.xml.seg',
+            'test': './datasets/laptop/Laptops_Test_Gold.xml.seg'
         }
     }
     input_colses = {

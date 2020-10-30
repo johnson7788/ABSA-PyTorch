@@ -21,6 +21,20 @@
 
 To install requirements, run `pip install -r requirements.txt`.
 
+## 数据集格式
+$T$ 代表句子中的短语，1表示POS，0表示NEU，-1表示NEG
+```buildoutcfg
+$T$ is super fast , around anywhere from 35 seconds to 1 minute .
+Boot time
+1
+$T$ would not fix the problem unless I bought your plan for $ 150 plus .
+tech support
+-1
+No $T$ is included .
+installation disk (DVD)
+0
+```
+
 * 对于基于非BERT的模型,
 [GloVe pre-trained word vectors](https://github.com/stanfordnlp/GloVe#download-pre-trained-word-vectors) 是必须的, 请参考 [data_utils.py](./data_utils.py) 更多细节.
 
