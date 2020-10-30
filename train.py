@@ -31,11 +31,18 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 class Instructor:
     def __init__(self, opt):
-        self.opt = opt
+        """
 
+        :param opt: argparse的参数
+        """
+        self.opt = opt
+        #是否是bert类模型，使用bert类模型初始化， 非BERT类使用GloVe
         if 'bert' in opt.model_name:
+            #初始化tokenizer
             tokenizer = Tokenizer4Bert(opt.max_seq_len, opt.pretrained_bert_name)
+            # 加载BERT模型
             bert = BertModel.from_pretrained(opt.pretrained_bert_name)
+            # 然后把BERT模型和opt参数传入自定义模型，进行进一步处理
             self.model = opt.model_class(bert, opt).to(opt.device)
         else:
             tokenizer = build_tokenizer(
@@ -297,7 +304,9 @@ def main():
     full_log_file = os.path.join(logdir,log_file)
     logger.addHandler(logging.FileHandler(full_log_file))
 
+    # 构建模型
     ins = Instructor(opt)
+    # 运行
     ins.run()
 
 

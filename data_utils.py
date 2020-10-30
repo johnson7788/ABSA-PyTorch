@@ -10,8 +10,13 @@ import torch
 from torch.utils.data import Dataset
 from transformers import BertTokenizer
 
-
 def build_tokenizer(fnames, max_seq_len, dat_fname):
+    """
+    :param fnames:
+    :param max_seq_len:
+    :param dat_fname:
+    :return:
+    """
     if os.path.exists(dat_fname):
         print('loading tokenizer:', dat_fname)
         tokenizer = pickle.load(open(dat_fname, 'rb'))
@@ -110,6 +115,10 @@ class Tokenizer(object):
 
 class Tokenizer4Bert:
     def __init__(self, max_seq_len, pretrained_bert_name):
+        """
+        :param max_seq_len:  最大序列长度
+        :param pretrained_bert_name:  预训练的bert模型名称
+        """
         self.tokenizer = BertTokenizer.from_pretrained(pretrained_bert_name)
         self.max_seq_len = max_seq_len
 
