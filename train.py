@@ -180,7 +180,7 @@ def main():
     parser.add_argument('--model_name', default='bert_spc', type=str, help='要使用的模型，模型在models目录下')
     parser.add_argument('--dataset', default='laptop', type=str, help='数据集 twitter, restaurant, laptop')
     parser.add_argument('--optimizer', default='adam', type=str)
-    parser.add_argument('--initializer', default='xavier_uniform_', type=str, help='参数初始化方法')
+    parser.add_argument('--initializer', default='xavier_uniform_', type=str, help='参数初始化方法xavier_normal_,orthogonal_')
     parser.add_argument('--learning_rate', default=2e-5, type=float, help='学习率BERT用 5e-5, 2e-5，其它用模型用 1e-3')
     parser.add_argument('--dropout', default=0.1, type=float)
     parser.add_argument('--l2reg', default=0.01, type=float, help='l2正则系数')
@@ -246,6 +246,7 @@ def main():
             'test': './datasets/laptop/Laptops_Test_Gold.xml.seg'
         }
     }
+    #
     input_colses = {
         'lstm': ['text_raw_indices'],
         'td_lstm': ['text_left_with_aspect_indices', 'text_right_with_aspect_indices'],
@@ -262,11 +263,13 @@ def main():
         'aen_bert': ['text_raw_bert_indices', 'aspect_bert_indices'],
         'lcf_bert': ['text_bert_indices', 'bert_segments_ids', 'text_raw_bert_indices', 'aspect_bert_indices'],
     }
+    #参数初始化化方式
     initializers = {
         'xavier_uniform_': torch.nn.init.xavier_uniform_,
         'xavier_normal_': torch.nn.init.xavier_normal,
         'orthogonal_': torch.nn.init.orthogonal_,
     }
+    #所有的优化器
     optimizers = {
         'adadelta': torch.optim.Adadelta,  # default lr=1.0
         'adagrad': torch.optim.Adagrad,  # default lr=0.01
@@ -276,16 +279,23 @@ def main():
         'rmsprop': torch.optim.RMSprop,  # default lr=0.01
         'sgd': torch.optim.SGD,
     }
+    # model的class, 都放到opt参数中，备用
     opt.model_class = model_classes[opt.model_name]
     opt.dataset_file = dataset_files[opt.dataset]
     opt.inputs_cols = input_colses[opt.model_name]
     opt.initializer = initializers[opt.initializer]
     opt.optimizer = optimizers[opt.optimizer]
+    # cpu还是GPU
     opt.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') \
         if opt.device is None else torch.device(opt.device)
 
+    #日志文件设置
+    logdir = "logs"
+    if not os.path.exists(logdir):
+        os.mkdir(logdir)
     log_file = '{}-{}-{}.log'.format(opt.model_name, opt.dataset, strftime("%y%m%d-%H%M", localtime()))
-    logger.addHandler(logging.FileHandler(log_file))
+    full_log_file = os.path.join(logdir,log_file)
+    logger.addHandler(logging.FileHandler(full_log_file))
 
     ins = Instructor(opt)
     ins.run()
