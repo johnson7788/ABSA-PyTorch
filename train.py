@@ -104,12 +104,12 @@ class Instructor:
 
     def _train(self, criterion, optimizer, train_data_loader, val_data_loader):
         """
-
-        :param criterion:
-        :param optimizer:
+        训练模型
+        :param criterion: 损失函数 eg：交叉熵损失
+        :param optimizer: 优化器 eg： Adam
         :param train_data_loader:
         :param val_data_loader:
-        :return:
+        :return: 返回效果最好的模型的路径
         """
         max_val_acc = 0
         max_val_f1 = 0
@@ -125,25 +125,28 @@ class Instructor:
                 global_step += 1
                 # clear gradient accumulators
                 optimizer.zero_grad()
-
+                # 根据模型需要取出特定的features
                 inputs = [sample_batched[col].to(self.opt.device) for col in self.opt.inputs_cols]
                 outputs = self.model(inputs)
+                #取出这个batch的情感标签
                 targets = sample_batched['polarity'].to(self.opt.device)
-
+                #计算损失
                 loss = criterion(outputs, targets)
                 loss.backward()
                 optimizer.step()
-
+                #累加训练正确的个数
                 n_correct += (torch.argmax(outputs, -1) == targets).sum().item()
                 n_total += len(outputs)
                 loss_total += loss.item() * len(outputs)
+                #记录到日志
                 if global_step % self.opt.log_step == 0:
                     train_acc = n_correct / n_total
                     train_loss = loss_total / n_total
                     logger.info('loss: {:.4f}, acc: {:.4f}'.format(train_loss, train_acc))
-
+            #每个epoch都去验证一次
             val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
             logger.info('> val_acc: {:.4f}, val_f1: {:.4f}'.format(val_acc, val_f1))
+            #保存准确率最高的模型
             if val_acc > max_val_acc:
                 max_val_acc = val_acc
                 if not os.path.exists('state_dict'):
@@ -158,9 +161,9 @@ class Instructor:
 
     def _evaluate_acc_f1(self, data_loader):
         """
-
-        :param data_loader:
-        :return:
+        模型评估
+        :param data_loader: 数据集
+        :return: 准确率和f1
         """
         n_correct, n_total = 0, 0
         t_targets_all, t_outputs_all = None, None

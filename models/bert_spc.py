@@ -19,7 +19,7 @@ class BERT_SPC(nn.Module):
 
     def forward(self, inputs):
         """
-        :param inputs:
+        :param inputs: 一个batch的features列表
         :return:
         """
         text_bert_indices, bert_segments_ids = inputs[0], inputs[1]
