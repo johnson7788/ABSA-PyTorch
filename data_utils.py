@@ -156,78 +156,91 @@ class Tokenizer4Bert:
             sequence = sequence[::-1]
         return pad_and_truncate(sequence, self.max_seq_len, padding=padding, truncating=truncating)
 
-
 class ABSADataset(Dataset):
-    def __init__(self, fname, tokenizer):
+    def __init__(self, fname, tokenizer, recreate_caches=False):
         """
         数据集处理
         :param fname: 训练集或测试集，验证集等的详细文件路径例如 './datasets/restaurant/Restaurants_Train.xml.seg'
         :param tokenizer:  已经初始化的tokenizer
         """
-        # 读取所有行，形成一个列表
-        fin = open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
-        lines = fin.readlines()
-        fin.close()
-        #用于存储处理后的数据
-        all_data = []
-        # 每3行为一个完整的样本
-        for i in range(0, len(lines), 3):
-            # lines[i].partition("$T$") 输出 ('But the ', '$T$', ' was so horrible to us .\n')
-            # text_left是'$T$'左边部分，text_right是右边部分
-            text_left, _, text_right = [s.lower().strip() for s in lines[i].partition("$T$")]
-            # aspect行处理
-            aspect = lines[i + 1].lower().strip()
-            #polarity情感，是0，-1，或1
-            polarity = lines[i + 2].strip()
-            # 包含aspect的完整文本序列由文本到--> id
-            text_raw_indices = tokenizer.text_to_sequence(text_left + " " + aspect + " " + text_right)
-            # 不包含aspect的文本处理，--> id
-            text_raw_without_aspect_indices = tokenizer.text_to_sequence(text_left + " " + text_right)
-            # aspect左边的文本处理
-            text_left_indices = tokenizer.text_to_sequence(text_left)
-            # aspect左边的文本+aspect处理
-            text_left_with_aspect_indices = tokenizer.text_to_sequence(text_left + " " + aspect)
-            # 右边序列处理，并且做反转
-            text_right_indices = tokenizer.text_to_sequence(text_right, reverse=True)
-            # aspect+右边序列，并且做反转
-            text_right_with_aspect_indices = tokenizer.text_to_sequence(" " + aspect + " " + text_right, reverse=True)
-            # 单独aspect处理
-            aspect_indices = tokenizer.text_to_sequence(aspect)
-            # 左边序列的长度
-            left_context_len = np.sum(text_left_indices != 0)
-            # aspect的长度
-            aspect_len = np.sum(aspect_indices != 0)
-            # aspect在文本中的位置tensor([2, 2])
-            aspect_in_text = torch.tensor([left_context_len.item(), (left_context_len + aspect_len - 1).item()])
-            # 情感转换成正数 -1,0,1 --> 0,1,2 ,  0：NEG， 1：NEU， 2：POS
-            polarity = int(polarity) + 1
-            # 构造成BERT格式，SEP分隔，sentence1是完全的句子，sentence2是aspect
-            text_bert_indices = tokenizer.text_to_sequence('[CLS] ' + text_left + " " + aspect + " " + text_right + ' [SEP] ' + aspect + " [SEP]")
-            #
-            bert_segments_ids = np.asarray([0] * (np.sum(text_raw_indices != 0) + 2) + [1] * (aspect_len + 1))
-            bert_segments_ids = pad_and_truncate(bert_segments_ids, tokenizer.max_seq_len)
-
-            text_raw_bert_indices = tokenizer.text_to_sequence("[CLS] " + text_left + " " + aspect + " " + text_right + " [SEP]")
-            aspect_bert_indices = tokenizer.text_to_sequence("[CLS] " + aspect + " [SEP]")
-
-            data = {
-                'text_bert_indices': text_bert_indices,
-                'bert_segments_ids': bert_segments_ids,
-                'text_raw_bert_indices': text_raw_bert_indices,
-                'aspect_bert_indices': aspect_bert_indices,
-                'text_raw_indices': text_raw_indices,
-                'text_raw_without_aspect_indices': text_raw_without_aspect_indices,
-                'text_left_indices': text_left_indices,
-                'text_left_with_aspect_indices': text_left_with_aspect_indices,
-                'text_right_indices': text_right_indices,
-                'text_right_with_aspect_indices': text_right_with_aspect_indices,
-                'aspect_indices': aspect_indices,
-                'aspect_in_text': aspect_in_text,
-                'polarity': polarity,
-            }
-
-            all_data.append(data)
-        self.data = all_data
+        #首先尝试加载features cached文件,如果不存在，那么生成
+        data_dir = os.path.dirname(fname)
+        file = os.path.basename(fname)
+        file = file.replace('.', '_')
+        cached_features_file = os.path.join(data_dir, f"cached_{file}")
+        if os.path.exists(cached_features_file) and not recreate_caches:
+            print("读取已缓存的features file:", cached_features_file)
+            features = torch.load(cached_features_file)
+        else:
+            # 用于存储处理后的数据
+            features = []
+            # 读取所有行，形成一个列表, 不存在features文件，生成
+            fin = open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
+            lines = fin.readlines()
+            fin.close()
+            # 每3行为一个完整的样本
+            for i in range(0, len(lines), 3):
+                # lines[i].partition("$T$") 输出 ('But the ', '$T$', ' was so horrible to us .\n')
+                # text_left是'$T$'左边部分，text_right是右边部分
+                text_left, _, text_right = [s.lower().strip() for s in lines[i].partition("$T$")]
+                # aspect行处理
+                aspect = lines[i + 1].lower().strip()
+                #polarity情感，是0，-1，或1
+                polarity = lines[i + 2].strip()
+                # 包含aspect的完整文本序列由文本到--> id
+                text_raw_indices = tokenizer.text_to_sequence(text_left + " " + aspect + " " + text_right)
+                # 不包含aspect的文本处理，--> id
+                text_raw_without_aspect_indices = tokenizer.text_to_sequence(text_left + " " + text_right)
+                # aspect左边的文本处理
+                text_left_indices = tokenizer.text_to_sequence(text_left)
+                # aspect左边的文本+aspect处理
+                text_left_with_aspect_indices = tokenizer.text_to_sequence(text_left + " " + aspect)
+                # 右边序列处理，并且做反转
+                text_right_indices = tokenizer.text_to_sequence(text_right, reverse=True)
+                # aspect+右边序列，并且做反转
+                text_right_with_aspect_indices = tokenizer.text_to_sequence(" " + aspect + " " + text_right, reverse=True)
+                # 单独aspect处理
+                aspect_indices = tokenizer.text_to_sequence(aspect)
+                # 左边序列的长度
+                left_context_len = np.sum(text_left_indices != 0)
+                # aspect的长度
+                aspect_len = np.sum(aspect_indices != 0)
+                # aspect在文本中的位置tensor([2, 2])
+                aspect_in_text = torch.tensor([left_context_len.item(), (left_context_len + aspect_len - 1).item()])
+                # 情感转换成正数 -1,0,1 --> 0,1,2 ,  0：NEG， 1：NEU， 2：POS
+                polarity = int(polarity) + 1
+                # 构造成BERT格式，SEP分隔，sentence1是完全的句子，sentence2是aspect
+                text_bert_indices = tokenizer.text_to_sequence('[CLS] ' + text_left + " " + aspect + " " + text_right + ' [SEP] ' + aspect + " [SEP]")
+                # 设置segment id，句子A用0表示,+2表示句子A加了CLS和SEP，句子B用1表示，+1表示加了SEP
+                bert_segments_ids = np.asarray([0] * (np.sum(text_raw_indices != 0) + 2) + [1] * (aspect_len + 1))
+                #segment id 也做padding
+                bert_segments_ids = pad_and_truncate(bert_segments_ids, tokenizer.max_seq_len)
+                # 句子A加上CLS和SEp之后的数据处理
+                text_raw_bert_indices = tokenizer.text_to_sequence("[CLS] " + text_left + " " + aspect + " " + text_right + " [SEP]")
+                # aspect 加上CLS和SEP之后的处理
+                aspect_bert_indices = tokenizer.text_to_sequence("[CLS] " + aspect + " [SEP]")
+                # 数据放入字典中
+                data = {
+                    'text_bert_indices': text_bert_indices,
+                    'bert_segments_ids': bert_segments_ids,
+                    'text_raw_bert_indices': text_raw_bert_indices,
+                    'aspect_bert_indices': aspect_bert_indices,
+                    'text_raw_indices': text_raw_indices,
+                    'text_raw_without_aspect_indices': text_raw_without_aspect_indices,
+                    'text_left_indices': text_left_indices,
+                    'text_left_with_aspect_indices': text_left_with_aspect_indices,
+                    'text_right_indices': text_right_indices,
+                    'text_right_with_aspect_indices': text_right_with_aspect_indices,
+                    'aspect_indices': aspect_indices,
+                    'aspect_in_text': aspect_in_text,
+                    'polarity': polarity,
+                }
+                #每条数据都放到列表中
+                features.append(data)
+            #缓存features
+            print(f"保存生成的feature cahced到{cached_features_file}")
+            torch.save(features, cached_features_file)
+        self.data = features
 
     def __getitem__(self, index):
         return self.data[index]
