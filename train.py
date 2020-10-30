@@ -54,7 +54,7 @@ class Instructor:
                 embed_dim=opt.embed_dim,
                 dat_fname='{0}_{1}_embedding_matrix.dat'.format(str(opt.embed_dim), opt.dataset))
             self.model = opt.model_class(embedding_matrix, opt).to(opt.device)
-
+        # 加载训练集
         self.trainset = ABSADataset(opt.dataset_file['train'], tokenizer)
         self.testset = ABSADataset(opt.dataset_file['test'], tokenizer)
         assert 0 <= opt.valset_ratio < 1

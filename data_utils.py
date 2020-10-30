@@ -123,6 +123,14 @@ class Tokenizer4Bert:
         self.max_seq_len = max_seq_len
 
     def text_to_sequence(self, text, reverse=False, padding='post', truncating='post'):
+        """
+
+        :param text:
+        :param reverse:
+        :param padding:
+        :param truncating:
+        :return:
+        """
         sequence = self.tokenizer.convert_tokens_to_ids(self.tokenizer.tokenize(text))
         if len(sequence) == 0:
             sequence = [0]
@@ -133,18 +141,31 @@ class Tokenizer4Bert:
 
 class ABSADataset(Dataset):
     def __init__(self, fname, tokenizer):
+        """
+        数据集处理
+        :param fname: 训练集或测试集，验证集等的详细文件路径例如 './datasets/restaurant/Restaurants_Train.xml.seg'
+        :param tokenizer:  已经初始化的tokenizer
+        """
+        # 读取所有行，形成一个列表
         fin = open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
         lines = fin.readlines()
         fin.close()
-
+        #用于存储处理后的数据
         all_data = []
+        # 每3行为一个完整的样本
         for i in range(0, len(lines), 3):
+            # lines[i].partition("$T$") 输出 ('But the ', '$T$', ' was so horrible to us .\n')
+            # text_left是'$T$'左边部分，text_right是右边部分
             text_left, _, text_right = [s.lower().strip() for s in lines[i].partition("$T$")]
+            # aspect行处理
             aspect = lines[i + 1].lower().strip()
+            #polarity情感，是0，-1，或1
             polarity = lines[i + 2].strip()
-
+            #
             text_raw_indices = tokenizer.text_to_sequence(text_left + " " + aspect + " " + text_right)
+            #
             text_raw_without_aspect_indices = tokenizer.text_to_sequence(text_left + " " + text_right)
+            #
             text_left_indices = tokenizer.text_to_sequence(text_left)
             text_left_with_aspect_indices = tokenizer.text_to_sequence(text_left + " " + aspect)
             text_right_indices = tokenizer.text_to_sequence(text_right, reverse=True)
