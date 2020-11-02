@@ -115,6 +115,7 @@ class Instructor:
         :return: 返回效果最好的模型的路径
         """
         max_val_acc = 0
+        max_train_acc = 0
         max_val_f1 = 0
         global_step = 0
         path = None
@@ -147,19 +148,24 @@ class Instructor:
                     train_acc = n_correct / n_total
                     train_loss = loss_total / n_total
                     logger.info('第{}个step的loss: {:.4f}, acc: {:.4f}'.format(global_step,train_loss, train_acc))
-            #每个epoch都去验证一次
-            val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
-            logger.info('> global_step: {}, val_acc: {:.4f}, val_f1: {:.4f}'.format(global_step, val_acc, val_f1))
-            #如果模型准确率提高，那么保存此模型
-            if val_acc > max_val_acc:
-                max_val_acc = val_acc
-                if not os.path.exists('state_dict'):
-                    os.mkdir('state_dict')
-                path = 'state_dict/{0}_{1}_step{2}_val_acc{3}'.format(self.opt.model_name, self.opt.dataset, global_step, round(val_acc, 4))
-                torch.save(self.model.state_dict(), path)
-                logger.info('>> saved: {}'.format(path))
-            if val_f1 > max_val_f1:
-                max_val_f1 = val_f1
+                # 从第200个step开始，检查模型效果
+                if global_step >200 and train_acc > max_train_acc:
+                    max_train_acc = train_acc
+                    # 去做验证，如果验证集效果也很好，那么保存模型
+                    val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
+                    logger.info(
+                        '> global_step: {}, val_acc: {:.4f}, val_f1: {:.4f}'.format(global_step, val_acc, val_f1))
+                    # 如果模型准确率提高，那么保存此模型
+                    if val_acc > max_val_acc:
+                        max_val_acc = val_acc
+                        if not os.path.exists('state_dict'):
+                            os.mkdir('state_dict')
+                        path = 'state_dict/{0}_{1}_step{2}_val_acc{3}'.format(self.opt.model_name, self.opt.dataset,
+                                                                              global_step, round(val_acc, 4))
+                        torch.save(self.model.state_dict(), path)
+                        logger.info('>> saved: {}'.format(path))
+                    if val_f1 > max_val_f1:
+                        max_val_f1 = val_f1
 
         return path
 
