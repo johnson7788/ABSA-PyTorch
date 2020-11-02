@@ -39,6 +39,9 @@ installation disk (DVD)
 [GloVe pre-trained word vectors](https://github.com/stanfordnlp/GloVe#download-pre-trained-word-vectors) 是必须的, 请参考 [data_utils.py](./data_utils.py) 更多细节.
 下载 glove.42B.zip，解压缩 glove.42B.300d.txt，放在项目根目录
 
+对比golve的中文词向量
+https://github.com/Embedding/Chinese-Word-Vectors
+
 ## 使用方式
 
 ### 训练

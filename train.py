@@ -150,7 +150,7 @@ class Instructor:
             #每个epoch都去验证一次
             val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
             logger.info('> global_step: {}, val_acc: {:.4f}, val_f1: {:.4f}'.format(global_step, val_acc, val_f1))
-            #保存准确率最高的模型
+            #如果模型准确率提高，那么保存此模型
             if val_acc > max_val_acc:
                 max_val_acc = val_acc
                 if not os.path.exists('state_dict'):
