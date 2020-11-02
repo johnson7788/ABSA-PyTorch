@@ -168,8 +168,7 @@ class Instructor:
                             saves_models.append(path)
                             #  仅保留3个最新的即可
                             if len(saves_models) >3:
-                                import shutil
-                                shutil.rmtree(saves_models[0])
+                                os.remove(saves_models[0])
                                 saves_models.pop(0)
                         if val_f1 > max_val_f1:
                             max_val_f1 = val_f1
