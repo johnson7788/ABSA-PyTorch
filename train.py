@@ -150,7 +150,7 @@ class Instructor:
                     train_loss = loss_total / n_total
                     logger.info('第{}个step的loss: {:.4f}, acc: {:.4f}'.format(global_step,train_loss, train_acc))
                     # 从第500个step开始，检查模型效果
-                    if global_step >500 and (train_acc - max_train_acc > 0.01 or i_batch == 0):
+                    if (global_step >500 and train_acc - max_train_acc > 0.01) or i_batch == 0:
                         max_train_acc = train_acc
                         # 去做验证，如果验证集效果也很好，那么保存模型
                         val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)

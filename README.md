@@ -49,7 +49,9 @@ https://github.com/Embedding/Chinese-Word-Vectors
 
 ```sh
 python train.py --model_name bert_spc --dataset restaurant
-python train.py --model_name aen_bert --dataset restaurant --seed 30 --num_epoch 2 --pretrained_bert_cache_dir model_cache
+python train.py --model_name aen_bert --dataset cosmetics --max_seq_len 200 --valset_ratio 0.1 --pretrained_bert_name bert-base-chinese --pretrained_bert_cache_dir model_cache --batch_size 16 --num_epoch 5
+python train.py --model_name bert_spc --dataset cosmetics --max_seq_len 200 --valset_ratio 0.1 --pretrained_bert_name bert-base-chinese --pretrained_bert_cache_dir model_cache --batch_size 16 --num_epoch 5
+python train.py --model_name lcf_bert --dataset cosmetics --max_seq_len 200 --valset_ratio 0.1 --pretrained_bert_name bert-base-chinese --pretrained_bert_cache_dir model_cache --batch_size 16 --num_epoch 3
 ```
 
 * 所有实现的模型都在  [models directory](./models/).
