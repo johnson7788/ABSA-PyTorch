@@ -29,12 +29,21 @@ def pad_and_truncate(sequence, maxlen, dtype='int64', padding='post', truncating
     return x
 
 def prepare_data(text_left, aspect, text_right, tokenizer):
+    """
+    处理数据集
+    :param text_left:
+    :param aspect:
+    :param text_right:
+    :param tokenizer:
+    :return:
+    """
     text_left = text_left.lower().strip()
     text_right = text_right.lower().strip()
     aspect = aspect.lower().strip()
-    
+    # 做成tokenizer
     text_raw_indices = tokenizer.text_to_sequence(text_left + " " + aspect + " " + text_right)            
     aspect_indices = tokenizer.text_to_sequence(aspect)
+    # aspect_len长度
     aspect_len = np.sum(aspect_indices != 0)
     text_bert_indices = tokenizer.text_to_sequence('[CLS] ' + text_left + " " + aspect + " " + text_right + ' [SEP] ' + aspect + " [SEP]")
     text_raw_bert_indices = tokenizer.text_to_sequence(
@@ -78,7 +87,7 @@ def get_parameters():
 
 
 if __name__ == '__main__':
-
+    # 推理模型
     model_classes = {
         'bert_spc': BERT_SPC,
         'aen_bert': AEN_BERT,
@@ -87,22 +96,30 @@ if __name__ == '__main__':
     # set your trained models here
     state_dict_paths = {
         'lcf_bert': 'state_dict/lcf_bert_laptop_val_acc0.2492',
-        'bert_spc': 'state_dict/bert_spc_laptop_val_acc0.268',
-        'aen_bert': 'state_dict/aen_bert_laptop_val_acc0.2006'
+        'bert_spc': 'state_dict/bert_spc_restaurant_val_acc0.3',
+        'aen_bert': 'state_dict/aen_bert_restaurant_val_acc0.8'
     }
+    sentiment2id = {
+        "NEG": -1,
+        "NEU": 0,
+        "POS": 1
+    }
+    id2sentiment = {value:key for key,value in sentiment2id.items()}
 
     opt = get_parameters()
     opt.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+    #加载tokenizer和预训练模型
     tokenizer = Tokenizer4Bert(opt.max_seq_len, opt.pretrained_bert_name)
     bert = BertModel.from_pretrained(opt.pretrained_bert_name)
+    #初始化自定义模型, eg: aen_bert
     model = model_classes[opt.model_name](bert, opt).to(opt.device)
-    
-    print('loading model {0} ...'.format(opt.model_name))
-    model.load_state_dict(torch.load(state_dict_paths[opt.model_name]))
+    #加载训练好的模型
+    print('开始加载模型 {0} ...'.format(opt.model_name))
+    model.load_state_dict(torch.load(state_dict_paths[opt.model_name], map_location=opt.device),strict=False)
     model.eval()
     torch.autograd.set_grad_enabled(False)
-
+    #例如输入如下
+    # input:  这个小地方有可爱的室内装饰和负担得起的城市价格
     # input: This little place has a cute interior decor and affordable city prices.
     # text_left = This little place has a cute 
     # aspect = interior decor
@@ -111,7 +128,7 @@ if __name__ == '__main__':
     text_bert_indices, bert_segments_ids, text_raw_bert_indices, aspect_bert_indices = \
         prepare_data('This little place has a cute', 'interior decor', 'and affordable city prices.', tokenizer)
     
-    
+    # 转换成tensor 格式
     text_bert_indices = torch.tensor([text_bert_indices], dtype=torch.int64).to(opt.device)
     bert_segments_ids = torch.tensor([bert_segments_ids], dtype=torch.int64).to(opt.device)
     text_raw_bert_indices = torch.tensor([text_raw_bert_indices], dtype=torch.int64).to(opt.device)
@@ -125,5 +142,7 @@ if __name__ == '__main__':
     outputs = model(inputs)
     t_probs = F.softmax(outputs, dim=-1).cpu().numpy()
     print('t_probs = ', t_probs)
-    print('aspect sentiment = ', t_probs.argmax(axis=-1) - 1)
+    sentiment_id = t_probs.argmax(axis=-1) - 1
+    sentiment = id2sentiment[sentiment_id[0]]
+    print(f"aspect sentiment = {sentiment_id}, {sentiment}")
 
