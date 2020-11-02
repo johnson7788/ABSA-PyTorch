@@ -37,6 +37,7 @@ installation disk (DVD)
 
 * 对于基于非BERT的模型,
 [GloVe pre-trained word vectors](https://github.com/stanfordnlp/GloVe#download-pre-trained-word-vectors) 是必须的, 请参考 [data_utils.py](./data_utils.py) 更多细节.
+下载 glove.42B.zip，解压缩 glove.42B.300d.txt，放在项目根目录
 
 ## 使用方式
 

@@ -45,14 +45,17 @@ class Instructor:
             # 然后把BERT模型和opt参数传入自定义模型，进行进一步处理
             self.model = opt.model_class(bert, opt).to(opt.device)
         else:
+            # 自定义tokenizer，生成id2word，word2idx
             tokenizer = build_tokenizer(
                 fnames=[opt.dataset_file['train'], opt.dataset_file['test']],
                 max_seq_len=opt.max_seq_len,
                 dat_fname='{0}_tokenizer.dat'.format(opt.dataset))
+            #返回所有单词的词嵌入 [word_nums, embedding_dimesion]
             embedding_matrix = build_embedding_matrix(
                 word2idx=tokenizer.word2idx,
                 embed_dim=opt.embed_dim,
                 dat_fname='{0}_{1}_embedding_matrix.dat'.format(str(opt.embed_dim), opt.dataset))
+            # 加载模型
             self.model = opt.model_class(embedding_matrix, opt).to(opt.device)
         # 加载训练集
         self.trainset = ABSADataset(opt.dataset_file['train'], tokenizer, recreate_caches=opt.recreate_caches)
@@ -127,10 +130,11 @@ class Instructor:
                 optimizer.zero_grad()
                 # 根据模型需要取出特定的features
                 inputs = [sample_batched[col].to(self.opt.device) for col in self.opt.inputs_cols]
+                # outputs shape [batch_size, class_num]
                 outputs = self.model(inputs)
-                #取出这个batch的情感标签
+                #取出这个batch的ground_truth情感标签
                 targets = sample_batched['polarity'].to(self.opt.device)
-                #计算损失
+                #通过交叉熵计算损失 outputs: [batch_size, class_num]  targets:[class_num] -->loss
                 loss = criterion(outputs, targets)
                 loss.backward()
                 optimizer.step()
@@ -204,6 +208,7 @@ class Instructor:
         #初始化参数
         self._reset_params()
         best_model_path = self._train(criterion, optimizer, train_data_loader, val_data_loader)
+        #  加载模型并评估
         self.model.load_state_dict(torch.load(best_model_path))
         self.model.eval()
         test_acc, test_f1 = self._evaluate_acc_f1(test_data_loader)

@@ -48,7 +48,7 @@ def prepare_data(text_left, aspect, text_right, tokenizer):
 
 def get_parameters():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', default='lcf_bert', type=str)
+    parser.add_argument('--model_name', default='lcf_bert', type=str, help='要使用的模型，模型在models目录下')
     parser.add_argument('--dataset', default='laptop', type=str, help='twitter, restaurant, laptop')
     parser.add_argument('--optimizer', default='adam', type=str)
     parser.add_argument('--initializer', default='xavier_uniform_', type=str)

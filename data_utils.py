@@ -12,15 +12,18 @@ from transformers import BertTokenizer
 
 def build_tokenizer(fnames, max_seq_len, dat_fname):
     """
-    :param fnames:
-    :param max_seq_len:
-    :param dat_fname:
+    如果已存在缓存好的tokeniner file，, 那么直接加载，否则生成
+    tokenier包含单词总数idx，单词到id映射，word2idx，还有idx2word，最大序列长度，
+    :param fnames: 文本文件列表，eg： ['./datasets/restaurant/Restaurants_Train.xml.seg', './datasets/restaurant/Restaurants_Test_Gold.xml.seg']
+    :param max_seq_len:  最大长度 eg： 80
+    :param dat_fname:  token 数据文件的名字 eg： 'restaurant_tokenizer.dat'
     :return:
     """
     if os.path.exists(dat_fname):
         print('loading tokenizer:', dat_fname)
         tokenizer = pickle.load(open(dat_fname, 'rb'))
     else:
+        #text 用于保存所有的文本，每行文本都连起来，形成一个语料库
         text = ''
         for fname in fnames:
             fin = open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
@@ -31,7 +34,7 @@ def build_tokenizer(fnames, max_seq_len, dat_fname):
                 aspect = lines[i + 1].lower().strip()
                 text_raw = text_left + " " + aspect + " " + text_right
                 text += text_raw + " "
-
+        #开始tokenizer，并保存到本地
         tokenizer = Tokenizer(max_seq_len)
         tokenizer.fit_on_text(text)
         pickle.dump(tokenizer, open(dat_fname, 'wb'))
@@ -39,6 +42,12 @@ def build_tokenizer(fnames, max_seq_len, dat_fname):
 
 
 def _load_word_vec(path, word2idx=None):
+    """
+    返回word2idx中的每个字对应的向量的字典
+    :param path: glove的向量文件
+    :param word2idx:
+    :return: {'worda':'numpy_array格式的向量', 'wordb':'numpy_array格式的向量',...}
+    """
     fin = open(path, 'r', encoding='utf-8', newline='\n', errors='ignore')
     word_vec = {}
     for line in fin:
@@ -49,20 +58,30 @@ def _load_word_vec(path, word2idx=None):
 
 
 def build_embedding_matrix(word2idx, embed_dim, dat_fname):
+    """
+    如果存在embedding缓存，直接加载，否则生成
+    默认加载 glove.6B.300d.txt
+    :param word2idx:  单词到id映射
+    :param embed_dim:  嵌入维度；默认维度300
+    :param dat_fname:  缓存文件名字
+    :return: embedding_matrix按word2idx中的单词顺序获取对应的向量，返回【words_nums, embedding_dimesion】
+    """
     if os.path.exists(dat_fname):
         print('loading embedding_matrix:', dat_fname)
         embedding_matrix = pickle.load(open(dat_fname, 'rb'))
     else:
         print('loading word vectors...')
+        #初始化一个embedding 矩阵
         embedding_matrix = np.zeros((len(word2idx) + 2, embed_dim))  # idx 0 and len(word2idx)+1 are all-zeros
         fname = './glove.twitter.27B/glove.twitter.27B.' + str(embed_dim) + 'd.txt' \
             if embed_dim != 300 else './glove.42B.300d.txt'
+        #加载词向量
         word_vec = _load_word_vec(fname, word2idx=word2idx)
-        print('building embedding_matrix:', dat_fname)
+        print('创建的单词 embedding_matrix:', dat_fname)
         for word, i in word2idx.items():
             vec = word_vec.get(word)
             if vec is not None:
-                # words not found in embedding index will be all-zeros.
+                # 嵌入索引中找不到的单词将为全零, 因为embedding_matrix初始化的时候默认为0
                 embedding_matrix[i] = vec
         pickle.dump(embedding_matrix, open(dat_fname, 'wb'))
     return embedding_matrix
@@ -99,6 +118,11 @@ def pad_and_truncate(sequence, maxlen, dtype='int64', padding='post', truncating
 
 class Tokenizer(object):
     def __init__(self, max_seq_len, lower=True):
+        """
+        初始化tokenizer
+        :param max_seq_len:  最大序列长度
+        :param lower:  是否转换成小写
+        """
         self.lower = lower
         self.max_seq_len = max_seq_len
         self.word2idx = {}
@@ -106,8 +130,14 @@ class Tokenizer(object):
         self.idx = 1
 
     def fit_on_text(self, text):
+        """
+        形成单词到id，和id到单词 把所有单词加入到单词表，word2idx，idx2word
+        :param text: 所有文本组成的string
+        :return:
+        """
         if self.lower:
             text = text.lower()
+        #按空格分词
         words = text.split()
         for word in words:
             if word not in self.word2idx:
