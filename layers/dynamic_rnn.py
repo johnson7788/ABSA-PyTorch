@@ -12,15 +12,14 @@ class DynamicLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers=1, bias=True, batch_first=True, dropout=0,
                  bidirectional=False, only_use_last_hidden_state=False, rnn_type = 'LSTM'):
         """
-        LSTM which can hold variable length sequence, use like TensorFlow's RNN(input, length...).
-
-        :param input_size:The number of expected features in the input x
-        :param hidden_size:The number of features in the hidden state h
-        :param num_layers:Number of recurrent layers.
-        :param bias:If False, then the layer does not use bias weights b_ih and b_hh. Default: True
-        :param batch_first:If True, then the input and output tensors are provided as (batch, seq, feature)
-        :param dropout:If non-zero, introduces a dropout layer on the outputs of each RNN layer except the last layer
-        :param bidirectional:If True, becomes a bidirectional RNN. Default: False
+        可以保存可变长度序列的LSTM，类似于TensorFlow的RNN（input，length ...）
+        :param input_size: 输入x特征数量
+        :param hidden_size: 隐藏状态的特征数h
+        :param num_layers: Number of recurrent layers.
+        :param bias:If False, 则该层不使用偏差权重b_ih和b_hh. Default: True
+        :param batch_first:If True, 输入输出的张量格式为 (batch, seq, feature)
+        :param dropout:If non-zero, 在除最后一层之外的每个RNN层的输出上引入一个dropout layer
+        :param bidirectional:If True, 是否是双向RNN. Default: False
         :param rnn_type: {LSTM, GRU, RNN}
         """
         super(DynamicLSTM, self).__init__()

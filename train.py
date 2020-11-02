@@ -21,7 +21,7 @@ from torch.utils.data import DataLoader, random_split
 from data_utils import build_tokenizer, build_embedding_matrix, Tokenizer4Bert, ABSADataset
 
 from models import LSTM, IAN, MemNet, RAM, TD_LSTM, TC_LSTM, Cabasc, ATAE_LSTM, TNet_LF, AOA, MGAN, LCF_BERT
-from models.aen import CrossEntropyLoss_LSR, AEN_BERT
+from models.aen import CrossEntropyLoss_LSR, AEN_BERT, AEN_GloVe
 from models.bert_spc import BERT_SPC
 
 logger = logging.getLogger()
@@ -267,6 +267,7 @@ def main():
         'mgan': MGAN,
         'bert_spc': BERT_SPC,
         'aen_bert': AEN_BERT,
+        'aen_glove': AEN_GloVe,
         'lcf_bert': LCF_BERT,
         # LCF-BERT模型的默认超参数如下：
         # lr: 2e-5

@@ -34,10 +34,30 @@ No $T$ is included .
 installation disk (DVD)
 0
 ```
+# 不同模型对应的论文
+```buildoutcfg
+'lstm': LSTM,
+'td_lstm':  Attention-based LSTM for Aspect-level Sentiment Classification
+'tc_lstm':  Attention-based LSTM for Aspect-level Sentiment Classification
+'atae_lstm': ATAE_LSTM,
+'ian': IAN,
+'memnet': MemNet,
+'ram': RAM,
+'cabasc': Cabasc,
+'tnet_lf': TNet_LF,
+'aoa': AOA,
+'mgan': MGAN,
+'bert_spc': BERT_SPC,
+'aen_bert':   Attentional Encoder Network for Targeted Sentiment Classiﬁcation
+'aen_glove':  Attentional Encoder Network for Targeted Sentiment Classiﬁcation
+'lcf_bert': LCF_BERT,
+
+```
 
 * 对于基于非BERT的模型,
 [GloVe pre-trained word vectors](https://github.com/stanfordnlp/GloVe#download-pre-trained-word-vectors) 是必须的, 请参考 [data_utils.py](./data_utils.py) 更多细节.
-下载 glove.42B.zip，解压缩 glove.42B.300d.txt，放在项目根目录
+http://downloads.cs.stanford.edu/nlp/data/wordvecs/glove.42B.300d.zip
+下载  glove.42B.300d.zip，解压缩 glove.42B.300d.txt，放在项目根目录
 
 对比golve的中文词向量
 https://github.com/Embedding/Chinese-Word-Vectors
