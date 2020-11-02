@@ -149,30 +149,30 @@ class Instructor:
                     train_acc = n_correct / n_total
                     train_loss = loss_total / n_total
                     logger.info('第{}个step的loss: {:.4f}, acc: {:.4f}'.format(global_step,train_loss, train_acc))
-                # 从第500个step开始，检查模型效果
-                if global_step >200 and train_acc > max_train_acc:
-                    max_train_acc = train_acc
-                    # 去做验证，如果验证集效果也很好，那么保存模型
-                    val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
-                    logger.info(
-                        '> global_step: {}, val_acc: {:.4f}, val_f1: {:.4f}'.format(global_step, val_acc, val_f1))
-                    # 如果模型准确率提高，那么保存此模型,
-                    if val_acc > max_val_acc:
-                        max_val_acc = val_acc
-                        if not os.path.exists('state_dict'):
-                            os.mkdir('state_dict')
-                        path = 'state_dict/{0}_{1}_step{2}_val_acc{3}'.format(self.opt.model_name, self.opt.dataset,
-                                                                              global_step, round(val_acc, 4))
-                        torch.save(self.model.state_dict(), path)
-                        logger.info('>> saved: {}'.format(path))
-                        saves_models.append(path)
-                        #  仅保留3个最新的即可
-                        if len(saves_models) >3:
-                            import shutil
-                            shutil.rmtree(saves_models[0])
-                            saves_models.pop(0)
-                    if val_f1 > max_val_f1:
-                        max_val_f1 = val_f1
+                    # 从第300个step开始，检查模型效果
+                    if global_step >300 and train_acc > max_train_acc:
+                        max_train_acc = train_acc
+                        # 去做验证，如果验证集效果也很好，那么保存模型
+                        val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
+                        logger.info(
+                            '> global_step: {}, val_acc: {:.4f}, val_f1: {:.4f}'.format(global_step, val_acc, val_f1))
+                        # 如果模型准确率提高，那么保存此模型,
+                        if val_acc > max_val_acc:
+                            max_val_acc = val_acc
+                            if not os.path.exists('state_dict'):
+                                os.mkdir('state_dict')
+                            path = 'state_dict/{0}_{1}_step{2}_val_acc{3}'.format(self.opt.model_name, self.opt.dataset,
+                                                                                  global_step, round(val_acc, 4))
+                            torch.save(self.model.state_dict(), path)
+                            logger.info('>> saved: {}'.format(path))
+                            saves_models.append(path)
+                            #  仅保留3个最新的即可
+                            if len(saves_models) >3:
+                                import shutil
+                                shutil.rmtree(saves_models[0])
+                                saves_models.pop(0)
+                        if val_f1 > max_val_f1:
+                            max_val_f1 = val_f1
 
         return path
 
@@ -240,7 +240,7 @@ def main():
     parser.add_argument('--l2reg', default=0.01, type=float, help='weight_decay ,l2正则系数')
     parser.add_argument('--num_epoch', default=10, type=int, help='非BERT类模型，请使用较多epoch')
     parser.add_argument('--batch_size', default=16, type=int, help='BERT模型请使用如下batch_size 16, 32, 64')
-    parser.add_argument('--log_step', default=5, type=int,help='每多少step进行日志记录')
+    parser.add_argument('--log_step', default=10, type=int,help='每多少step进行日志记录')
     parser.add_argument('--embed_dim', default=300, type=int, help='embedding的维度')
     parser.add_argument('--hidden_dim', default=300, type=int, help='隐藏层维度')
     parser.add_argument('--bert_dim', default=768, type=int, help='bert dim')
