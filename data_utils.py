@@ -91,7 +91,7 @@ def pad_and_truncate(sequence, maxlen, dtype='int64', padding='post', truncating
     """
     对序列进行padding和截取
     :param sequence: 序列id，例如 [2021, 1996, 3095, 2001, 2061, 9202, 2000, 2149, 1012]
-    :param maxlen: 最大序列长度
+    :param maxlen: 最大序列长度， opt中定义的
     :param dtype: 数据转换成numpy int64格式
     :param padding: post 还是pre
     :param truncating: post 还是pre
@@ -159,12 +159,12 @@ class Tokenizer(object):
 
 
 class Tokenizer4Bert:
-    def __init__(self, max_seq_len, pretrained_bert_name):
+    def __init__(self, max_seq_len, pretrained_bert_name, cache_dir=None):
         """
         :param max_seq_len:  最大序列长度
         :param pretrained_bert_name:  预训练的bert模型名称
         """
-        self.tokenizer = BertTokenizer.from_pretrained(pretrained_bert_name)
+        self.tokenizer = BertTokenizer.from_pretrained(pretrained_bert_name,cache_dir=cache_dir)
         self.max_seq_len = max_seq_len
 
     def text_to_sequence(self, text, reverse=False, padding='post', truncating='post'):

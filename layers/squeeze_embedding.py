@@ -15,7 +15,7 @@ class SqueezeEmbedding(nn.Module):
     """
     def __init__(self, batch_first=True):
         """
-
+        初始化
         :param batch_first:
         """
         super(SqueezeEmbedding, self).__init__()

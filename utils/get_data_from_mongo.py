@@ -121,12 +121,17 @@ def check_data(save_file):
     lines = f.readlines()
 
   without_aspect = []
+  contents_lenth = []
   for line in lines:
     line_chinese = json.loads(line)
     if not line_chinese["aspect"]:
       without_aspect.append(line_chinese)
       print(line_chinese)
+    else:
+      contents_lenth.append(len(line_chinese["content"]))
   print(f"没有aspect的数量是{len(without_aspect)}")
+  max_lenth = max(contents_lenth)
+  print(f"最大的句子长度是{max_lenth}")
 
 def clean_cache():
   """
@@ -141,6 +146,6 @@ if __name__ == '__main__':
   new_file = "../datasets/cosmetics/final_all.txt"
   # db2local(save_file)
   # sentiment_process(save_file,new_file)
-  split_all(new_file,train_rate=0.9, test_rate=0.1)
-  # check_data(save_file)
+  # split_all(new_file,train_rate=0.9, test_rate=0.1)
+  check_data(save_file)
   # clean_cache()

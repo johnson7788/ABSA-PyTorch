@@ -102,7 +102,7 @@ class AEN_BERT(nn.Module):
         self.ffn_t = PositionwiseFeedForward(opt.hidden_dim, dropout=opt.dropout)
         # 目标特定的注意力层初始化
         self.attn_s1 = Attention(opt.hidden_dim, n_head=8, score_function='mlp', dropout=opt.dropout)
-        # 输出层
+        # 最终输出层定义
         self.dense = nn.Linear(opt.hidden_dim*3, opt.polarities_dim)
 
     def forward(self, inputs):

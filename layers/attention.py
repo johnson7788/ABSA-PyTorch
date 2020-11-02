@@ -31,7 +31,7 @@ class Attention(nn.Module):
         # Q和K的计算
         self.w_k = nn.Linear(embed_dim, n_head * hidden_dim)
         self.w_q = nn.Linear(embed_dim, n_head * hidden_dim)
-        #输出投影层计算
+        #attention的投影层计算
         self.proj = nn.Linear(n_head * hidden_dim, out_dim)
         self.dropout = nn.Dropout(dropout)
         if score_function == 'mlp':

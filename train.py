@@ -39,7 +39,7 @@ class Instructor:
         #是否是bert类模型，使用bert类模型初始化， 非BERT类使用GloVe
         if 'bert' in opt.model_name:
             #初始化tokenizer
-            tokenizer = Tokenizer4Bert(opt.max_seq_len, opt.pretrained_bert_name)
+            tokenizer = Tokenizer4Bert(opt.max_seq_len, opt.pretrained_bert_name, cache_dir=opt.pretrained_bert_cache_dir)
             # 加载BERT模型
             bert = BertModel.from_pretrained(opt.pretrained_bert_name, cache_dir=opt.pretrained_bert_cache_dir)
             # 然后把BERT模型和opt参数传入自定义模型，进行进一步处理
@@ -287,6 +287,10 @@ def main():
         'laptop': {
             'train': './datasets/laptop/Laptops_Train.xml.seg',
             'test': './datasets/laptop/Laptops_Test_Gold.xml.seg'
+        },
+        'cosmetics': {
+            'train': './datasets/cosmetics/train.txt',
+            'test': './datasets/cosmetics/test.txt'
         }
     }
     # 使用哪种特征的文件，我们对数据进行了各种预处理，分别满足不同模型的数据要求, input columns
