@@ -9,6 +9,7 @@ datasets/restaurant/cached*
 datasets/restaurant/cached_Restaurants_Test_Gold_xml_seg
 datasets/restaurant/cached_Restaurants_Train_xml_seg
 model_cache
+datasets/cosmetics
 
 # OSX
 #
