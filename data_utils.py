@@ -67,10 +67,10 @@ def build_embedding_matrix(word2idx, embed_dim, dat_fname):
     :return: embedding_matrix按word2idx中的单词顺序获取对应的向量，返回【words_nums, embedding_dimesion】
     """
     if os.path.exists(dat_fname):
-        print('loading embedding_matrix:', dat_fname)
+        print('加载 embedding_matrix:', dat_fname)
         embedding_matrix = pickle.load(open(dat_fname, 'rb'))
     else:
-        print('loading word vectors...')
+        print('正在加载词向量...')
         #初始化一个embedding 矩阵
         embedding_matrix = np.zeros((len(word2idx) + 2, embed_dim))  # idx 0 and len(word2idx)+1 are all-zeros
         fname = './glove.twitter.27B/glove.twitter.27B.' + str(embed_dim) + 'd.txt' \
@@ -187,17 +187,19 @@ class Tokenizer4Bert:
         return pad_and_truncate(sequence, self.max_seq_len, padding=padding, truncating=truncating)
 
 class ABSADataset(Dataset):
-    def __init__(self, fname, tokenizer, recreate_caches=False):
+    def __init__(self, fname, tokenizer, model_name, recreate_caches=False):
         """
         数据集处理
         :param fname: 训练集或测试集，验证集等的详细文件路径例如 './datasets/restaurant/Restaurants_Train.xml.seg'
         :param tokenizer:  已经初始化的tokenizer
+        :param model_name:  模型的名字，用于创建唯一的cache文件
+        :param recreate_caches:  重新创建tokenizer的 cache文件
         """
         #首先尝试加载features cached文件,如果不存在，那么生成
         data_dir = os.path.dirname(fname)
         file = os.path.basename(fname)
         file = file.replace('.', '_')
-        cached_features_file = os.path.join(data_dir, f"cached_{file}")
+        cached_features_file = os.path.join(data_dir, f"cached_{model_name}_{file}")
         if os.path.exists(cached_features_file) and not recreate_caches:
             print("读取已缓存的features file:", cached_features_file)
             features = torch.load(cached_features_file)

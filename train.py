@@ -58,8 +58,8 @@ class Instructor:
             # 加载模型
             self.model = opt.model_class(embedding_matrix, opt).to(opt.device)
         # 加载训练集
-        self.trainset = ABSADataset(opt.dataset_file['train'], tokenizer, recreate_caches=opt.recreate_caches)
-        self.testset = ABSADataset(opt.dataset_file['test'], tokenizer, recreate_caches=opt.recreate_caches)
+        self.trainset = ABSADataset(opt.dataset_file['train'], tokenizer, recreate_caches=opt.recreate_caches, model_name=opt.model_name)
+        self.testset = ABSADataset(opt.dataset_file['test'], tokenizer, recreate_caches=opt.recreate_caches, model_name=opt.model_name)
         #如果valset_ratio为0，测试集代替验证集
         assert 0 <= opt.valset_ratio < 1
         if opt.valset_ratio > 0:
@@ -117,6 +117,7 @@ class Instructor:
         max_val_acc = 0
         max_train_acc = 0
         max_val_f1 = 0
+        saves_models = []
         global_step = 0
         path = None
         for epoch in range(self.opt.num_epoch):
@@ -148,14 +149,14 @@ class Instructor:
                     train_acc = n_correct / n_total
                     train_loss = loss_total / n_total
                     logger.info('第{}个step的loss: {:.4f}, acc: {:.4f}'.format(global_step,train_loss, train_acc))
-                # 从第200个step开始，检查模型效果
+                # 从第500个step开始，检查模型效果
                 if global_step >200 and train_acc > max_train_acc:
                     max_train_acc = train_acc
                     # 去做验证，如果验证集效果也很好，那么保存模型
                     val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
                     logger.info(
                         '> global_step: {}, val_acc: {:.4f}, val_f1: {:.4f}'.format(global_step, val_acc, val_f1))
-                    # 如果模型准确率提高，那么保存此模型
+                    # 如果模型准确率提高，那么保存此模型,
                     if val_acc > max_val_acc:
                         max_val_acc = val_acc
                         if not os.path.exists('state_dict'):
@@ -164,6 +165,12 @@ class Instructor:
                                                                               global_step, round(val_acc, 4))
                         torch.save(self.model.state_dict(), path)
                         logger.info('>> saved: {}'.format(path))
+                        saves_models.append(path)
+                        #  仅保留3个最新的即可
+                        if len(saves_models) >3:
+                            import shutil
+                            shutil.rmtree(saves_models[0])
+                            saves_models.pop(0)
                     if val_f1 > max_val_f1:
                         max_val_f1 = val_f1
 
