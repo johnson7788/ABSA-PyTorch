@@ -41,7 +41,7 @@ class Instructor:
             #初始化tokenizer
             tokenizer = Tokenizer4Bert(opt.max_seq_len, opt.pretrained_bert_name)
             # 加载BERT模型
-            bert = BertModel.from_pretrained(opt.pretrained_bert_name)
+            bert = BertModel.from_pretrained(opt.pretrained_bert_name, cache_dir=opt.pretrained_bert_cache_dir)
             # 然后把BERT模型和opt参数传入自定义模型，进行进一步处理
             self.model = opt.model_class(bert, opt).to(opt.device)
         else:
@@ -146,10 +146,10 @@ class Instructor:
                 if global_step % self.opt.log_step == 0:
                     train_acc = n_correct / n_total
                     train_loss = loss_total / n_total
-                    logger.info('loss: {:.4f}, acc: {:.4f}'.format(train_loss, train_acc))
+                    logger.info('第{}个step的loss: {:.4f}, acc: {:.4f}'.format(global_step,train_loss, train_acc))
             #每个epoch都去验证一次
             val_acc, val_f1 = self._evaluate_acc_f1(val_data_loader)
-            logger.info('> val_acc: {:.4f}, val_f1: {:.4f}'.format(val_acc, val_f1))
+            logger.info('> global_step: {}, val_acc: {:.4f}, val_f1: {:.4f}'.format(global_step, val_acc, val_f1))
             #保存准确率最高的模型
             if val_acc > max_val_acc:
                 max_val_acc = val_acc
@@ -232,6 +232,7 @@ def main():
     parser.add_argument('--hidden_dim', default=300, type=int, help='隐藏层维度')
     parser.add_argument('--bert_dim', default=768, type=int, help='bert dim')
     parser.add_argument('--pretrained_bert_name', default='bert-base-uncased', type=str, help='使用的预训练模型')
+    parser.add_argument('--pretrained_bert_cache_dir', default=None, type=str, help='使用的预训练模型缓存的目录')
     parser.add_argument('--max_seq_len', default=80, type=int, help='最大序列长度')
     parser.add_argument('--polarities_dim', default=3, type=int, help='类别维度，分几类,默认POS，NEU，NEG')
     parser.add_argument('--hops', default=3, type=int,help='多少hop设置')

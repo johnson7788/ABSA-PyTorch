@@ -45,6 +45,7 @@ installation disk (DVD)
 
 ```sh
 python train.py --model_name bert_spc --dataset restaurant
+python train.py --model_name aen_bert --dataset restaurant --seed 30 --num_epoch 2 --pretrained_bert_cache_dir model_cache
 ```
 
 * 所有实现的模型都在  [models directory](./models/).
