@@ -210,6 +210,7 @@ class ABSADataset(Dataset):
             fin = open(fname, 'r', encoding='utf-8', newline='\n', errors='ignore')
             lines = fin.readlines()
             fin.close()
+            print(f"开始生成feature cahced{cached_features_file}文件，预计耗时较长")
             # 每3行为一个完整的样本
             for i in range(0, len(lines), 3):
                 # lines[i].partition("$T$") 输出 ('But the ', '$T$', ' was so horrible to us .\n')
