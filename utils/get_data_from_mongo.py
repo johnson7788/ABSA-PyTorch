@@ -24,7 +24,6 @@ def db2local(save_file):
             f.write(content + '\n')
     print(f"文件已生成{save_file}")
 
-
 def split_all(save_file, train_rate=0.9, test_rate=0.1):
     """
     拆分成90%训练集，10%测试集
@@ -58,8 +57,7 @@ def split_all(save_file, train_rate=0.9, test_rate=0.1):
             f.write(x[2])
     print(f"文件已生成\n {train_file}, 样本数: {train_num} \n {test_file}, 样本数: {test_num}")
 
-
-def sentiment_process(save_file, new_file):
+def sentiment_process(save_file, new_file, truncate=None):
     """
     类似
     $T$ is super fast , around anywhere from 35 seconds to 1 minute .
@@ -67,6 +65,7 @@ def sentiment_process(save_file, new_file):
     1
     :param save_file:
     :param new_file: 存储到新文件
+    :param truncate: 截断处理，截断前后，默认为None，可以为int，截断保留数字
     :return: 存储到文件
     """
     # 原始文件中的sScore的映射方式
@@ -99,7 +98,16 @@ def sentiment_process(save_file, new_file):
                 aspectTerm_insentence = "".join(content[start:end])
                 if not aspectTerm == aspectTerm_insentence:
                     raise Exception(f"单词在句子中位置对应不上，请检查,句子行数{total}, 句子是{line_chinese}")
-                line1 = content[:start] + "$T$" + content[end:]
+                if truncate:
+                    #如果truncate为数字，那么开始截断
+                    if truncate > start:
+                        left = content[:start]
+                    else:
+                        left = content[start-truncate:start]
+                    right = content[end:end+truncate]
+                    line1 = left + "$T$" + right
+                else:
+                    line1 = content[:start] + "$T$" + content[end:]
                 line2 = aspectTerm
                 # sScore映射成我们需要的, -1，0，1格式
                 line3 = str(sScore - 1)
@@ -113,7 +121,6 @@ def sentiment_process(save_file, new_file):
                 f.write(line2 + "\n")
                 f.write(line3 + "\n")
     print(f"文件已生成{new_file}, 总数据量是{total}")
-
 
 def check_data(save_file):
     """
@@ -137,7 +144,6 @@ def check_data(save_file):
     max_lenth = max(contents_lenth)
     print(f"最大的句子长度是{max_lenth}")
 
-
 def clean_cache():
     """
     删除../data/cosmetics/cached* 文件
@@ -145,7 +151,6 @@ def clean_cache():
     """
     os.system("rm -rf ../datasets/cosmetics/cached*")
     os.system("rm -rf ../logs/*")
-
 
 def prepare_for_word2vec(save_file):
     """
@@ -210,13 +215,45 @@ def train_word2vec(sentence_file, user_dict, dimension=300):
     #保存成纯文本文件
     model.wv.save_word2vec_format(model_path, binary=False)
 
+def conver_embedding_file():
+    """
+    转换我们自己的预训练词向量，到embdding file的格式为
+    单词 300d向量
+    :return:
+    """
+    import numpy as np
+    import json
+    embedding_file = "../embedding/model.npy"
+    word2index_file = "../embedding/word2index.json"
+    # 保存新的txt格式的embedding
+    word2vec_file = "../embedding/cosmetics_300d_w2v.txt"
+    embedding_array = np.load(embedding_file)
+    print("embdding array的shape是(单词数，嵌入维度):",embedding_array.shape)
+
+    #但因嵌入单词的索引
+    with open(word2index_file,'r',encoding="utf-8") as f:
+        content = f.read()
+    word_index = json.loads(content)
+    print("索引中单词总数是: ",len(word_index))
+    print("eg: 单词 [马拉河] 的索引是:",word_index['马拉河'])
+    id2index = {v:k for k,v in word_index.items()}
+    with open(word2vec_file, 'w', encoding="utf-8") as f:
+        for idx, arr in enumerate(embedding_array):
+            word = id2index[idx]
+            if word == "[ZERO]":
+                word = "0"
+            string_array = " ".join(map(str, arr.tolist()))
+            f.write(f"{word} {string_array}\n")
+
 if __name__ == '__main__':
     save_file = "../datasets/cosmetics/all.txt"
     new_file = "../datasets/cosmetics/final_all.txt"
     # db2local(save_file)
     # sentiment_process(save_file, new_file)
-    # split_all(new_file, train_rate=0.9, test_rate=0.1)
+    # sentiment_process(save_file, new_file,truncate=25)
+    split_all(new_file, train_rate=0.9, test_rate=0.1)
     # check_data(save_file)
     # clean_cache()
-    sentence_file, user_dict = prepare_for_word2vec(save_file)
-    train_word2vec(sentence_file, user_dict)
+    # conver_embedding_file()
+    # sentence_file, user_dict = prepare_for_word2vec(save_file)
+    # train_word2vec(sentence_file, user_dict)
