@@ -40,7 +40,7 @@ installation disk (DVD)
 http://downloads.cs.stanford.edu/nlp/data/wordvecs/glove.42B.300d.zip
 下载  glove.42B.300d.zip，解压缩 glove.42B.300d.txt，放在项目根目录
 
-对比golve的中文词向量
+对比golve的中文词向量, 或者参考utils中的train_word2vec函数，训练自己的词向量
 https://github.com/Embedding/Chinese-Word-Vectors
 
 ## 使用方式

@@ -54,7 +54,8 @@ class Instructor:
             embedding_matrix = build_embedding_matrix(
                 word2idx=tokenizer.word2idx,
                 embed_dim=opt.embed_dim,
-                dat_fname='{0}_{1}_embedding_matrix.dat'.format(str(opt.embed_dim), opt.dataset))
+                dat_fname='{0}_{1}_embedding_matrix.dat'.format(str(opt.embed_dim), opt.dataset),
+                embedding_file=opt.embedding_file)
             # 加载模型
             self.model = opt.model_class(embedding_matrix, opt).to(opt.device)
         # 加载训练集
@@ -245,6 +246,7 @@ def main():
     parser.add_argument('--bert_dim', default=768, type=int, help='bert dim')
     parser.add_argument('--pretrained_bert_name', default='bert-base-uncased', type=str, help='使用的预训练模型')
     parser.add_argument('--pretrained_bert_cache_dir', default=None, type=str, help='使用的预训练模型缓存的目录')
+    parser.add_argument('--embedding_file', default='embedding/glove.42B.300d.txt', type=str, help='如果不使用BERT，那么自定义的预训练的词向量文件的位置')
     parser.add_argument('--max_seq_len', default=80, type=int, help='最大序列长度')
     parser.add_argument('--polarities_dim', default=3, type=int, help='类别维度，分几类,默认POS，NEU，NEG')
     parser.add_argument('--hops', default=3, type=int,help='多少hop设置')
