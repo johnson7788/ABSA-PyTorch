@@ -220,8 +220,12 @@ class Instructor:
         val_data_loader = DataLoader(dataset=self.valset, batch_size=self.opt.batch_size, shuffle=False)
         #初始化参数
         self._reset_params()
-        best_model_path = self._train(criterion, optimizer, train_data_loader, val_data_loader)
+        if self.opt.do_train:
+            best_model_path = self._train(criterion, optimizer, train_data_loader, val_data_loader)
+        if self.opt.eval_model_path:
+            best_model_path = self.opt.eval_model_path
         #  加载模型并评估
+        logger.info(f"开始评估模型{best_model_path}")
         self.model.load_state_dict(torch.load(best_model_path))
         self.model.eval()
         test_acc, test_f1 = self._evaluate_acc_f1(test_data_loader)
@@ -236,19 +240,22 @@ def main():
     parser.add_argument('--optimizer', default='adam', type=str)
     parser.add_argument('--initializer', default='xavier_uniform_', type=str, help='参数初始化方法xavier_normal_,orthogonal_')
     parser.add_argument('--learning_rate', default=2e-5, type=float, help='学习率BERT用 5e-5, 2e-5，其它用模型用 1e-3')
-    parser.add_argument('--dropout', default=0.1, type=float)
+    parser.add_argument('--dropout', default=0.1, type=float, help='默认的droput 0.1')
     parser.add_argument('--l2reg', default=0.01, type=float, help='weight_decay ,l2正则系数')
-    parser.add_argument('--num_epoch', default=10, type=int, help='非BERT类模型，请使用较多epoch')
+    parser.add_argument('--num_epoch', default=10, type=int, help='非BERT类模型，训练的epoch需要多一些')
     parser.add_argument('--batch_size', default=16, type=int, help='BERT模型请使用如下batch_size 16, 32, 64')
     parser.add_argument('--log_step', default=10, type=int,help='每多少step进行日志记录')
-    parser.add_argument('--embed_dim', default=300, type=int, help='embedding的维度')
-    parser.add_argument('--hidden_dim', default=300, type=int, help='隐藏层维度')
-    parser.add_argument('--bert_dim', default=768, type=int, help='bert dim')
-    parser.add_argument('--pretrained_bert_name', default='bert-base-uncased', type=str, help='使用的预训练模型')
-    parser.add_argument('--pretrained_bert_cache_dir', default=None, type=str, help='使用的预训练模型缓存的目录')
-    parser.add_argument('--embedding_file', default='embedding/glove.42B.300d.txt', type=str, help='如果不使用BERT，那么自定义的预训练的词向量文件的位置')
+    parser.add_argument('--embed_dim', default=300, type=int, help='词嵌入时embedding的维度，默认300')
+    parser.add_argument('--hidden_dim', default=300, type=int, help='训练时隐藏层维度，默认300')
+    parser.add_argument('--bert_dim', default=768, type=int, help='bert dim，bert的词向量维度，默认768')
+    parser.add_argument('--pretrained_bert_name', default='bert-base-chinese', type=str, help='使用的预训练模型，使用的预训练模型，默认bert-base-chinese')
+    parser.add_argument('--pretrained_bert_cache_dir', default='model_cache', type=str, help='使用的预训练模型缓存的目录，默认')
+    parser.add_argument('--embedding_file', default='embedding/cosmetics_300d.txt', type=str, help='如果不使用BERT，那么自定义的预训练的词向量文件的位置')
     parser.add_argument('--max_seq_len', default=80, type=int, help='最大序列长度')
     parser.add_argument('--polarities_dim', default=3, type=int, help='类别维度，分几类,默认POS，NEU，NEG')
+    parser.add_argument('--do_train', default=True, type=bool, help='默认是训练模式，训练之后评估')
+    parser.add_argument('--do_eval', default=True, type=bool, help='是否评估，默认评估')
+    parser.add_argument('--eval_model_path', default=None, type=str, help='如果评估，请给出评估模型位置')
     parser.add_argument('--hops', default=3, type=int,help='多少hop设置')
     parser.add_argument('--device', default=None, type=str, help='e.g. cuda:0')
     parser.add_argument('--seed', default=None, type=int, help='用于重现，随机数种子')
@@ -306,6 +313,10 @@ def main():
         'cosmetics': {
             'train': './datasets/cosmetics/train.txt',
             'test': './datasets/cosmetics/test.txt'
+        },
+        'cosmetics_as': {
+            'train': './datasets/cosmetics_as/train-as.txt',
+            'test': './datasets/cosmetics_as/test-as.txt'
         }
     }
     # 使用哪种特征的文件，我们对数据进行了各种预处理，分别满足不同模型的数据要求, input columns
