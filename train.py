@@ -5,7 +5,7 @@
 import logging
 import argparse
 import math
-import os
+import os, time
 import sys
 from time import strftime, localtime
 import random
@@ -225,11 +225,17 @@ class Instructor:
         if self.opt.eval_model_path:
             best_model_path = self.opt.eval_model_path
         #  加载模型并评估
-        logger.info(f"开始评估模型{best_model_path}")
+        #评估的数据集数量
+        num_test_examples = len(test_data_loader.dataset)
+        logger.info(f"开始评估模型{best_model_path}, 评估的数据集数量是{num_test_examples}")
+        # 加上耗时计算
+        start_time = time.time()
         self.model.load_state_dict(torch.load(best_model_path, map_location=self.opt.device),strict=False)
         self.model.eval()
         test_acc, test_f1 = self._evaluate_acc_f1(test_data_loader)
         logger.info('>> test_acc: {:.4f}, test_f1: {:.4f}'.format(test_acc, test_f1))
+        cost_time = time.time() - start_time
+        logger.info(f"--- 评估{num_test_examples}条数据的总耗时是 {cost_time} seconds, 每条耗时 {cost_time/num_test_examples} seconds ---")
 
 
 def main():
@@ -374,7 +380,6 @@ def main():
     ins = Instructor(opt)
     # 运行
     ins.run()
-
 
 if __name__ == '__main__':
     main()
