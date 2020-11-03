@@ -226,7 +226,7 @@ class Instructor:
             best_model_path = self.opt.eval_model_path
         #  加载模型并评估
         logger.info(f"开始评估模型{best_model_path}")
-        self.model.load_state_dict(torch.load(best_model_path))
+        self.model.load_state_dict(torch.load(best_model_path, map_location=self.opt.device),strict=False)
         self.model.eval()
         test_acc, test_f1 = self._evaluate_acc_f1(test_data_loader)
         logger.info('>> test_acc: {:.4f}, test_f1: {:.4f}'.format(test_acc, test_f1))
@@ -253,8 +253,8 @@ def main():
     parser.add_argument('--embedding_file', default='embedding/cosmetics_300d.txt', type=str, help='如果不使用BERT，那么自定义的预训练的词向量文件的位置')
     parser.add_argument('--max_seq_len', default=80, type=int, help='最大序列长度')
     parser.add_argument('--polarities_dim', default=3, type=int, help='类别维度，分几类,默认POS，NEU，NEG')
-    parser.add_argument('--do_train', default=True, type=bool, help='默认是训练模式，训练之后评估')
-    parser.add_argument('--do_eval', default=True, type=bool, help='是否评估，默认评估')
+    parser.add_argument('--do_train', action='store_true', help='默认是训练模式，训练之后评估')
+    parser.add_argument('--do_eval', action='store_true', help='是否评估，默认评估')
     parser.add_argument('--eval_model_path', default=None, type=str, help='如果评估，请给出评估模型位置')
     parser.add_argument('--hops', default=3, type=int,help='多少hop设置')
     parser.add_argument('--device', default=None, type=str, help='e.g. cuda:0')
