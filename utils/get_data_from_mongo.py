@@ -133,6 +133,7 @@ def check_data(save_file):
 
     without_aspect = []
     contents_lenth = []
+    all_aspects = []
     for line in lines:
         line_chinese = json.loads(line)
         if not line_chinese["aspect"]:
@@ -140,9 +141,16 @@ def check_data(save_file):
             print(line_chinese)
         else:
             contents_lenth.append(len(line_chinese["content"]))
+        for aspect in line_chinese["aspect"]:
+            aspectTerm = aspect["aspectTerm"]
+            all_aspects.append(aspectTerm)
     print(f"没有aspect的数量是{len(without_aspect)}")
     max_lenth = max(contents_lenth)
+    max_aspect = max(map(len, all_aspects))
+    max_aspect_word = list(filter(lambda x: len(x)>20, all_aspects))
     print(f"最大的句子长度是{max_lenth}")
+    print(f"最长的Apsect长度是{max_aspect}")
+    print(f"长度大于20的aspect有{max_aspect_word}")
 
 def clean_cache():
     """
@@ -251,8 +259,8 @@ if __name__ == '__main__':
     # db2local(save_file)
     # sentiment_process(save_file, new_file)
     # sentiment_process(save_file, new_file,truncate=25)
-    split_all(new_file, train_rate=0.9, test_rate=0.1)
-    # check_data(save_file)
+    # split_all(new_file, train_rate=0.9, test_rate=0.1)
+    check_data(save_file)
     # clean_cache()
     # conver_embedding_file()
     # sentence_file, user_dict = prepare_for_word2vec(save_file)
