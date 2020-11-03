@@ -35,6 +35,51 @@ installation disk (DVD)
 0
 ```
 
+## 模型训练参数讲解
+```buildoutcfg
+train.py
+  --model_name MODEL_NAME
+                        要使用的模型，模型在models目录下,例如 aen_bert，bert_spc，lcf_bert等
+  --dataset DATASET     数据集名称
+  --optimizer OPTIMIZER
+                        模型训练优化器，默认adam
+  --initializer INITIALIZER
+                        参数初始化方法xavier_normal_,orthogonal_
+  --learning_rate LEARNING_RATE
+                        学习率BERT用 5e-5, 2e-5，其它用模型用 1e-3
+  --dropout DROPOUT     默认的droput 0.1
+  --l2reg L2REG         weight_decay ,l2正则系数
+  --num_epoch NUM_EPOCH
+                        非BERT类模型，训练的epoch需要多一些
+  --batch_size BATCH_SIZE
+                        BERT模型请使用如下batch_size 16, 32, 64
+  --log_step LOG_STEP   每多少step进行日志记录
+  --embed_dim EMBED_DIM
+                        词嵌入时embedding的维度，默认300
+  --hidden_dim HIDDEN_DIM
+                        训练时隐藏层维度，默认300
+  --bert_dim BERT_DIM   bert dim，bert的词向量维度，默认768
+  --pretrained_bert_name PRETRAINED_BERT_NAME
+                        使用的预训练模型，使用的预训练模型，默认bert-base-chinese
+  --pretrained_bert_cache_dir PRETRAINED_BERT_CACHE_DIR
+                        使用的预训练模型缓存的目录，默认
+  --embedding_file EMBEDDING_FILE
+                        如果不使用BERT，那么自定义的预训练的词向量文件的位置
+  --max_seq_len MAX_SEQ_LEN
+                        最大序列长度
+  --polarities_dim POLARITIES_DIM
+                        类别维度，分几类,默认POS，NEU，NEG
+  --hops HOPS           多少hop设置
+  --device DEVICE       e.g. cuda:0
+  --seed SEED           用于重现，随机数种子
+  --valset_ratio VALSET_RATIO
+                        训练集拆分出验证的比例, 在0和1之间设置比例以验证,如果为0，用测试集代替验证集
+  --recreate_caches     默认False，是否重新生成数据处理的cache文件
+  --local_context_focus LOCAL_CONTEXT_FOCUS
+                        本地上下文焦点模式，cdw或cdm
+  --SRD SRD             语义相对距离，请参阅LCF-BERT模型的论文
+```
+
 * 对于基于非BERT的模型,
 [GloVe pre-trained word vectors](https://github.com/stanfordnlp/GloVe#download-pre-trained-word-vectors) 是必须的, 请参考 [data_utils.py](./data_utils.py) 更多细节.
 http://downloads.cs.stanford.edu/nlp/data/wordvecs/glove.42B.300d.zip
