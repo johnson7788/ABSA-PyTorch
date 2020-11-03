@@ -257,8 +257,8 @@ if __name__ == '__main__':
     save_file = "../datasets/cosmetics/all.txt"
     new_file = "../datasets/cosmetics/final_all.txt"
     # db2local(save_file)
-    # sentiment_process(save_file, new_file)
-    sentiment_process(save_file, new_file,truncate=25)
+    sentiment_process(save_file, new_file)
+    # sentiment_process(save_file, new_file,truncate=25)
     split_all(new_file, train_rate=0.9, test_rate=0.1)
     # check_data(save_file)
     # clean_cache()
