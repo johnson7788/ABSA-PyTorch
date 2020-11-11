@@ -153,8 +153,8 @@ class Instructor:
                         max_train_acc = train_acc
                         if not os.path.exists('state_dict'):
                             os.mkdir('state_dict')
-                        path = 'state_dict/{0}_{1}_step{2}_val_acc{3}'.format(self.opt.model_name, self.opt.dataset,
-                                                                              global_step, round(val_acc, 4))
+                        path = 'state_dict/{0}_{1}_step{2}_train_acc{3}'.format(self.opt.model_name, self.opt.dataset,
+                                                                              global_step, round(train_acc, 4))
                         torch.save(self.model.state_dict(), path)
                         logger.info('>> saved: {}'.format(path))
                         saves_models.append(path)
