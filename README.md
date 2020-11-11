@@ -35,6 +35,55 @@ installation disk (DVD)
 0
 ```
 
+## 模型主要分为2类，基于BERT预训练模型和自定义预训练词向量模型,如下为BERT类的性能和效率测试
+不同的bert类型评估结果，测试集是2017条，其余数据18151条作为训练集，（其中的10%作为验证集）
+训练和评估GPU是Tesla P4 7611MiB 
+```buildoutcfg
+2020年11月10日，使用蒸馏的方法，将模型整理到4层transformer结构,模型大小由390MB下降到43MB，大小下降9倍, GPU推理速度提升到0.8ms每条，速度提升大概6倍左右
+#bert_spc 前后25个字的截断后的模型效果，效果最好
+开始评估模型/content/ABSA-PyTorch/absa_bert/bert_spc_cosmetics_step1600_val_acc0.8424_truncate, 评估的数据集数量是2017
+>> test_acc: 0.8468, test_f1: 0.8257
+--- 评估2017条数据的总耗时是 9.30297040939331 seconds, 每条耗时 0.004612280817745816 seconds ---
+
+#bert_spc模型, 不做截断，序列全部输入的情况
+开始评估模型/content/ABSA-PyTorch/absa_bert/bert_spc_cosmetics_val_acc0.8369, 评估的数据集数量是2017
+>> test_acc: 0.8389, test_f1: 0.8222
+--- 评估2017条数据的总耗时是 35.2659113407135 seconds, 每条耗时 0.017484338790636343 seconds ---
+
+#aen_bert模型第700个step时
+开始评估模型/content/ABSA-PyTorch/absa_bert/aen_bert_cosmetics_step700_val_acc0.7658
+>> test_acc: 0.7764, test_f1: 0.7393
+
+#aen_bert第2000个step时
+开始评估模型/content/ABSA-PyTorch/absa_bert/aen_bert_cosmetics_val_acc0.7857, 评估的数据集数量是2017
+>> test_acc: 0.7749, test_f1: 0.7419
+--- 评估2017条数据的总耗时是 25.957362174987793 seconds, 每条耗时 0.012869292104604756 seconds ---
+
+#lcf_bert模型
+开始评估模型/content/ABSA-PyTorch/absa_bert/lcf_bert_cosmetics_step770_val_acc0.8325, 评估的数据集数量是2017
+>> test_acc: 0.8166, test_f1: 0.7936
+--- 评估2017条数据的总耗时是 53.32358193397522 seconds, 每条耗时 0.02643707582249639 seconds ---
+```
+
+## 目录结构说明
+```buildoutcfg
+├── README.md   
+├── data_utils.py   数据处理文件，tokenizer，padding等
+├── datasets      保存的数据文件，目前把语料保存到本地
+├── embedding     当不使用BERT的预训练模型时，可以把自定义的词向量文件放在此处，例如文件名cosmetics_300d.txt
+├── infer_example.py  使用自定义预训练词向量模型时用于推理的程序
+├── infer_example_bert_models.py   使用BERT类模型师，推理的程序
+├── layers     自定义的模型layers，包括attention，rnn，逐点卷积，embedding压缩等
+├── logs       训练时报错的日志目录
+├── model_cache    当使用BERT类模型时，Huggieface的transformers的模型的缓存目录，第一次会下载
+├── models      各种模型的主结构
+├── requirements.txt    项目依赖
+├── state_dict   训练好的模型的保存位置， 例如文件名 bert_spc_cosmetics_val_acc0.8369
+├── train.py    训练主程序入口
+├── train_k_fold_cross_val.py   k折较差验证的主程序
+└── utils   预处理文件get_data_from_mongo.py， 主要包括从mongo下载语料，语料进行拆分成训练集和测试集，训练word2vec词向量等
+```
+
 ## 模型训练参数讲解
 ```buildoutcfg
 train.py
