@@ -97,7 +97,11 @@ python train.py --model_name bert_spc --dataset restaurant
 python train.py --model_name aen_bert --dataset cosmetics --max_seq_len 200 --valset_ratio 0.1 --pretrained_bert_name bert-base-chinese --pretrained_bert_cache_dir model_cache --batch_size 16 --num_epoch 5
 python train.py --model_name bert_spc --dataset cosmetics --max_seq_len 200 --valset_ratio 0.1 --pretrained_bert_name bert-base-chinese --pretrained_bert_cache_dir model_cache --batch_size 16 --num_epoch 5
 python train.py --model_name lcf_bert --dataset cosmetics --max_seq_len 200 --valset_ratio 0.1 --pretrained_bert_name bert-base-chinese --pretrained_bert_cache_dir model_cache --batch_size 16 --num_epoch 3
+
+#使用自定义的bert_td_lstm
+python train.py --model_name bert_td_lstm --dataset cosmetics_as --do_train --valset_ratio 0.1 --learning_rate 1e-3 --max_seq_len 70 --batch_size 16 --num_epoch 15 --embed_dim 768
 ```
+
 
 * 所有实现的模型都在  [models directory](./models/).
 * 查看 [train.py](./train.py) 了解更多训练参数
