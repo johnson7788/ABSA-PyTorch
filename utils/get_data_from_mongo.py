@@ -253,15 +253,49 @@ def conver_embedding_file():
             string_array = " ".join(map(str, arr.tolist()))
             f.write(f"{word} {string_array}\n")
 
+def split_test(test_file, dev_rate=0.5, test_rate=0.5):
+    """
+    拆分成50%训练集，50%测试集
+    :param save_file:
+    :param train_rate: float
+    :param test_rate:
+    :return:
+    """
+    random.seed(30)
+    examples = []
+    with open(test_file, 'r') as f:
+        lines = f.readlines()
+        # 每3行一个样本
+        for i in range(0, len(lines), 3):
+            examples.append((lines[i], lines[i + 1], lines[i + 2]))
+    random.shuffle(examples)
+    total = len(examples)
+    dev_num = int(total * dev_rate)
+    test_num = int(total * test_rate)
+    dev_file = os.path.join(os.path.dirname(save_file), 'dev.txt')
+    test_file = os.path.join(os.path.dirname(save_file), 'testnew.txt')
+    with open(dev_file, 'w') as f:
+        for x in examples[:dev_num]:
+            f.write(x[0])
+            f.write(x[1])
+            f.write(x[2])
+    with open(test_file, 'w') as f:
+        for x in examples[dev_num:]:
+            f.write(x[0])
+            f.write(x[1])
+            f.write(x[2])
+    print(f"文件已生成\n {dev_file}, 样本数: {dev_num} \n {test_file}, 样本数: {test_num}")
+
 if __name__ == '__main__':
     save_file = "../datasets/cosmetics/all.txt"
     new_file = "../datasets/cosmetics/final_all.txt"
     # db2local(save_file)
-    sentiment_process(save_file, new_file)
+    # sentiment_process(save_file, new_file)
     # sentiment_process(save_file, new_file,truncate=25)
-    split_all(new_file, train_rate=0.9, test_rate=0.1)
+    # split_all(new_file, train_rate=0.9, test_rate=0.1)
     # check_data(save_file)
     # clean_cache()
     # conver_embedding_file()
     # sentence_file, user_dict = prepare_for_word2vec(save_file)
     # train_word2vec(sentence_file, user_dict)
+    split_test(test_file="../datasets/cosmetics/test.txt")

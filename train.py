@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader, random_split
 
 from data_utils import build_tokenizer, build_embedding_matrix, Tokenizer4Bert, ABSADataset
 
-from models import LSTM, IAN, MemNet, RAM, TD_LSTM, TC_LSTM, Cabasc, ATAE_LSTM, TNet_LF, AOA, MGAN, LCF_BERT
+from models import LSTM, IAN, MemNet, RAM, TD_LSTM, TC_LSTM, Cabasc, ATAE_LSTM, TNet_LF, AOA, MGAN, LCF_BERT, BERT_TD_LSTM
 from models.aen import CrossEntropyLoss_LSR, AEN_BERT, AEN_GloVe
 from models.bert_spc import BERT_SPC
 
@@ -241,9 +241,9 @@ class Instructor:
 def main():
     # 超参数
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', default='bert_spc', type=str, help='要使用的模型，模型在models目录下')
+    parser.add_argument('--model_name', default='bert_spc', type=str, help='要使用的模型，模型在models目录下,例如 aen_bert，bert_spc，lcf_bert等')
     parser.add_argument('--dataset', default='laptop', type=str, help='数据集 twitter, restaurant, laptop')
-    parser.add_argument('--optimizer', default='adam', type=str)
+    parser.add_argument('--optimizer', default='adam', type=str,help='模型训练优化器，默认adam')
     parser.add_argument('--initializer', default='xavier_uniform_', type=str, help='参数初始化方法xavier_normal_,orthogonal_')
     parser.add_argument('--learning_rate', default=2e-5, type=float, help='学习率BERT用 5e-5, 2e-5，其它用模型用 1e-3')
     parser.add_argument('--dropout', default=0.1, type=float, help='默认的droput 0.1')
@@ -283,6 +283,7 @@ def main():
     model_classes = {
         'lstm': LSTM,
         'td_lstm': TD_LSTM,
+        'bert_td_lstm': BERT_TD_LSTM,
         'tc_lstm': TC_LSTM,
         'atae_lstm': ATAE_LSTM,
         'ian': IAN,
@@ -329,6 +330,7 @@ def main():
     input_colses = {
         'lstm': ['text_raw_indices'],
         'td_lstm': ['text_left_with_aspect_indices', 'text_right_with_aspect_indices'],
+        'bert_td_lstm': ['text_left_with_aspect_indices', 'text_right_with_aspect_indices'],
         'tc_lstm': ['text_left_with_aspect_indices', 'text_right_with_aspect_indices', 'aspect_indices'],
         'atae_lstm': ['text_raw_indices', 'aspect_indices'],
         'ian': ['text_raw_indices', 'aspect_indices'],
