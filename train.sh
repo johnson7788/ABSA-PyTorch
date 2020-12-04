@@ -1,0 +1,1 @@
+python train.py --model_name bert_spc --dataset cosmetics_as --do_train --valset_ratio 0.1 --learning_rate 1e-3 --max_seq_len 70 --batch_size 4 --num_epoch 15 --embed_dim 768
